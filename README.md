@@ -34,7 +34,7 @@ flowchart TD
 
 ## 📂 Project Structure
 
----
+```
 cross-cloud-ai-cost-advisor/
  ├── src/
  │   ├── CostAdvisor.API/            # ASP.NET Core Web API
@@ -46,19 +46,21 @@ cross-cloud-ai-cost-advisor/
  ├── docs/                           # Architecture docs, diagrams
  ├── README.md
  └── LICENSE
----
+```
 
 ## 🚀 Getting Started
 
----
+
 1. Clone the Repository
+```
 git clone https://github.com/your-username/cross-cloud-ai-cost-advisor.git
 cd cross-cloud-ai-cost-advisor
+```
 
 2. Configure Credentials
 
 Create appsettings.json (or use environment variables):
-
+```
 {
   "AWS": {
     "AccessKey": "your-access-key",
@@ -78,15 +80,18 @@ Create appsettings.json (or use environment variables):
     "ConnectionString": "Server=localhost;Database=CostAdvisor;User Id=sa;Password=yourpassword;"
   }
 }
-
+```
 3. Run API
+```
 cd src/CostAdvisor.API
 dotnet run
+```
 
 4. Run UI
+```
 cd src/CostAdvisor.UI
 dotnet run
-
+```
 5. Open in Browser
 
 👉 http://localhost:5000
