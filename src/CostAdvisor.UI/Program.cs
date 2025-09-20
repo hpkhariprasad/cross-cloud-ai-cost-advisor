@@ -1,4 +1,5 @@
 using CostAdvisor.UI.Components;
+using CostAdvisor.UI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// Register HttpClient for API calls
+builder.Services.AddHttpClient<ICostAdvisorService, CostAdvisorService>(client =>
+{
+    client.BaseAddress = new Uri("http://localhost:5058");
+});
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

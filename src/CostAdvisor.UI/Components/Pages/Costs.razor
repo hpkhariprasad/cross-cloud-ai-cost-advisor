@@ -1,0 +1,64 @@
+﻿@page "/costs"
+@rendermode InteractiveServer
+@inject ICostAdvisorService CostService
+@using CostAdvisor.UI.Services;
+@using CostAdvisor.Shared.Models;
+
+<h3>Resource Costs</h3>
+
+<button class="btn btn-primary" @onclick="FetchData">Fetch Latest Costs</button>
+
+@if (costs == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (!costs.Any())
+{
+    <p>No resources found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Resource Name</th>
+                <th>Region</th>
+                <th>Type</th>
+                <th>Monthly Cost (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var cost in costs)
+            {
+                <tr>
+                    <td>@cost.Provider</td>
+                    <td>@cost.Region</td>
+                    <td>@cost.Service</td>
+                    <td>@cost.Cost</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<NormalizedCost> costs;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadCosts();
+    }
+
+    private async Task LoadCosts()
+    {
+        costs = await CostService.GetResourceCostsAsync();
+    }
+
+    private async Task FetchData()
+    {
+        Console.WriteLine("Fetch button clicked!");
+        await CostService.FetchCostsAsync();
+        await LoadCosts(); // reload summary after fetch
+        Console.WriteLine("Fetch button clicked!");
+    }
+}
