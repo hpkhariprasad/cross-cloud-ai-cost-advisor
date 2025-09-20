@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\CostAdvisor.Core\CostAdvisor.Core.csproj" />
+    <ProjectReference Include="..\CostAdvisor.Shared\CostAdvisor.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
