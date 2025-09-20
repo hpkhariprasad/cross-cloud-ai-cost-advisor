@@ -1,4 +1,5 @@
 ﻿using CostAdvisor.Shared.Models;
+using System.Net.Http.Json;
 
 namespace CostAdvisor.UI.Services
 {
@@ -13,7 +14,6 @@ namespace CostAdvisor.UI.Services
 
         public async Task<List<NormalizedCost>> GetResourceCostsAsync()
         {
-            // Example date range: last 30 days
             var from = DateTime.UtcNow.AddDays(-30).ToString("yyyy-MM-dd");
             var to = DateTime.UtcNow.ToString("yyyy-MM-dd");
 
@@ -22,7 +22,12 @@ namespace CostAdvisor.UI.Services
         }
         public async Task FetchCostsAsync()
         {
-            var response = await _http.PostAsync("/api/billing/fetch", null);
+            var from = DateTime.UtcNow.AddDays(-30);
+            var to = DateTime.UtcNow;
+            var request = new FetchRequest { AccountId = string.Empty, From = from, To = to };
+            var content = JsonContent.Create(request);
+
+            var response = await _http.PostAsync("/api/billing/fetch", content);
             response.EnsureSuccessStatusCode();
         }
 
