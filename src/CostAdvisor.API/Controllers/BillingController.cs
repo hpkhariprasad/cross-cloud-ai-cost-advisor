@@ -1,4 +1,5 @@
 ﻿using CostAdvisor.Core.Services;
+using CostAdvisor.Shared.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,9 +24,9 @@ namespace CostAdvisor.API.Controllers
         }
 
         [HttpPost("fetch")]
-        public async Task<IActionResult> Fetch()
+        public async Task<IActionResult> Fetch([FromBody] FetchRequest request)
         {
-            await _billingService.FetchAndStoreAsync();
+            await _billingService.FetchAndStoreAsync(request.AccountId, request.From, request.To);
             return Ok(new { message = "Costs fetched and stored" });
         }
     }

@@ -1,5 +1,6 @@
 ﻿using CostAdvisor.Shared.Models;
 using CostAdvisor.Core.Repositories;
+using CostAdvisor.Core.Providers;
 
 namespace CostAdvisor.Core.Services;
 
@@ -7,21 +8,37 @@ public class BillingService
 {
     private readonly ICostRepository _repository;
 
-    public BillingService(ICostRepository repository)
+    private readonly IEnumerable<ICloudBillingProvider> _cloudBillingProviders;
+
+    public BillingService(ICostRepository repository,IEnumerable<ICloudBillingProvider> cloudBillingProviders)
     {
         _repository = repository;
+        _cloudBillingProviders = cloudBillingProviders;
     }
 
     // For MVP, mock costs instead of real API calls
-    public async Task FetchAndStoreAsync()
+    public async Task FetchAndStoreAsync(string accountId, DateTime start, DateTime end)
     {
-        var mockCosts = new List<NormalizedCost>
-        {
-            new() { Provider = "AWS", Service = "EC2", Region = "us-east-1", Date = DateTime.UtcNow.Date, UsageAmount = 10, Cost = 50 },
-            new() { Provider = "Azure", Service = "VM", Region = "eastus", Date = DateTime.UtcNow.Date, UsageAmount = 5, Cost = 40 }
-        };
+        var allCosts = new List<NormalizedCost>();
 
-        await _repository.SaveCostsAsync(mockCosts);
+        foreach (var provider in _cloudBillingProviders)
+        {
+            var billingData = await provider.GetBillingDataAsync(accountId, start, end);
+
+            foreach (var usage in billingData.UsageDetails)
+            {
+                allCosts.Add(new NormalizedCost
+                {
+                    Provider = provider.GetType().Name.Replace("Dummy", "").Replace("BillingProvider",""),
+                    Region = usage.Region,
+                    Date = usage.Date,
+                    Service = usage.Service,
+                    Cost = Math.Round(usage.Cost,2)
+                });
+            }
+
+            await _repository.SaveCostsAsync(allCosts);
+        }
     }
 
     public Task<IEnumerable<NormalizedCost>> GetCostsAsync(DateTime from, DateTime to) =>

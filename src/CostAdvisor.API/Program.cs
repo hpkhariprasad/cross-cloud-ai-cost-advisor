@@ -1,6 +1,8 @@
+using CostAdvisor.Core.Providers;
 using CostAdvisor.Core.Repositories;
 using CostAdvisor.Core.Services;
-using CostAdvisor.Infrastructure;
+using CostAdvisor.Infrastructure.Providers;
+using CostAdvisor.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -9,6 +11,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
 builder.Services.AddSingleton<ICostRepository, CostRepository>();
+builder.Services.AddSingleton<ICloudBillingProvider, AWSBillingProviderDummy>();
+builder.Services.AddSingleton<ICloudBillingProvider, AzureBillingProviderDummy>();
+builder.Services.AddSingleton<ICloudBillingProvider, GCPBillingProviderDummy>();
 builder.Services.AddScoped<BillingService>();
 var app = builder.Build();
 
