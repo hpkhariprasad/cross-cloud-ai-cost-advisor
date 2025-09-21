@@ -27,5 +27,9 @@ namespace CostAdvisor.Shared.Models
         // Navigation
         public Account Account { get; set; } = null!;
         public ICollection<Recommendation> Recommendations { get; set; } = new List<Recommendation>();
+
+        public string BillingAccount { get; set; } = string.Empty;
+        public string ResourceName { get; set; }=string.Empty;
+        public Dictionary<string,string>? Tags { get; set; }
     }
 }

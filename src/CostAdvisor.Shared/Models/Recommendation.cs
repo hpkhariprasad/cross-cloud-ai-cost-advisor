@@ -23,5 +23,7 @@ namespace CostAdvisor.Shared.Models
 
         // Navigation
         public NormalizedCost Cost { get; set; } = null!;
+        public string Category { get; set; } = string.Empty;
+        public decimal EstimatedSavings { get; set; }
     }
 }
