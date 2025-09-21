@@ -14,7 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 builder.Services.AddControllers();
-builder.Services.AddSingleton<ICostRepository, CostRepository>();
+builder.Services.AddScoped<ICostRepository, CostRepository>();
 builder.Services.AddSingleton<ICloudBillingProvider, AWSBillingProviderDummy>();
 builder.Services.AddSingleton<ICloudBillingProvider, AzureBillingProviderDummy>();
 builder.Services.AddSingleton<ICloudBillingProvider, GCPBillingProviderDummy>();
