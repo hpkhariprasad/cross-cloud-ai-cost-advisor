@@ -1,64 +1,81 @@
 ﻿@page "/costs"
-@rendermode InteractiveServer
-@inject ICostAdvisorService CostService
-@using CostAdvisor.UI.Services;
-@using CostAdvisor.Shared.Models;
+@using CostAdvisor.Shared.Models
+@inject HttpClient Http
 
-<h3>Resource Costs</h3>
+<PageTitle>Costs</PageTitle>
 
-<button class="btn btn-primary" @onclick="FetchData">Fetch Latest Costs</button>
+<div class="mb-4 flex gap-4">
+    <input placeholder="Filter by provider..." class="input" @bind="providerFilter" />
+    <input placeholder="Filter by service..." class="input" @bind="serviceFilter" />
+    <input placeholder="Filter by region..." class="input" @bind="regionFilter" />
+</div>
 
-@if (costs == null)
-{
-    <p><em>Loading...</em></p>
-}
-else if (!costs.Any())
-{
-    <p>No resources found.</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Resource Name</th>
-                <th>Region</th>
-                <th>Type</th>
-                <th>Monthly Cost (₹)</th>
+<table class="table-auto w-full">
+    <thead>
+        <tr>
+            <th>Provider</th>
+            <th>Region</th>
+            <th>Service</th>
+            <th>Usage</th>
+            <th>Cost</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var cost in filteredCosts)
+        {
+            <tr @onclick="() => ToggleExpand(cost.Id)" class="cursor-pointer hover:bg-gray-100">
+                <td>@cost.Account</td>
+                <td>@cost.Region</td>
+                <td>@cost.Service</td>
+                <td>@cost.UsageAmount</td>
+                <td>@cost.UsageAmount.ToString("C")</td>
+                <td>@cost.Date.ToShortDateString()</td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var cost in costs)
+            @if (expandedId == cost.Id && cost.Tags != null)
             {
                 <tr>
-                    <td>@cost.AccountId</td>
-                    <td>@cost.Region</td>
-                    <td>@cost.Service</td>
-                    <td>@cost.UsageAmount</td>
+                    <td colspan="6">
+                        <strong>Tags:</strong>
+                        <ul>
+                            @foreach (var tag in cost.Tags)
+                            {
+                                <li>@tag.Key: @tag.Value</li>
+                            }
+                        </ul>
+                    </td>
                 </tr>
             }
-        </tbody>
-    </table>
-}
+        }
+    </tbody>
+</table>
 
 @code {
-    private List<NormalizedCost> costs;
+    List<NormalizedCost> costs = new();
+    List<NormalizedCost> filteredCosts = new();
+
+    string providerFilter = "";
+    string serviceFilter = "";
+    string regionFilter = "";
+    int expandedId = -1;
 
     protected override async Task OnInitializedAsync()
     {
-        await LoadCosts();
+        costs = await Http.GetFromJsonAsync<List<NormalizedCost>>("api/billing/costs");
+        filteredCosts = costs;
     }
 
-    private async Task LoadCosts()
+    void ToggleExpand(int id)
     {
-        costs = await CostService.GetResourceCostsAsync();
+        expandedId = expandedId == id ? -1 : id;
     }
 
-    private async Task FetchData()
+    void OnFilterChanged()
     {
-        Console.WriteLine("Fetch button clicked!");
-        await CostService.FetchCostsAsync();
-        await LoadCosts(); // reload summary after fetch
-        Console.WriteLine("Fetch button clicked!");
+        filteredCosts = costs.Where(c =>
+            (string.IsNullOrEmpty(providerFilter) || c.Account.AccountIdentifier.Contains(providerFilter, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(serviceFilter) || c.Service.Contains(serviceFilter, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(regionFilter) || c.Region.Contains(regionFilter, StringComparison.OrdinalIgnoreCase))
+        ).ToList();
     }
 }

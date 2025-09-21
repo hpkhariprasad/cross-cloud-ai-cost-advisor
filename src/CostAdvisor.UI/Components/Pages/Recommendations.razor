@@ -1,0 +1,47 @@
+﻿@page "/recommendations"
+@using CostAdvisor.Shared.Models
+@inject HttpClient Http
+
+<PageTitle>Recommendations</PageTitle>
+
+<table class="table-auto w-full">
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Message</th>
+            <th>Estimated Savings</th>
+            <th>Confidence</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var rec in recommendations)
+        {
+            <tr>
+                <td>@rec.Category</td>
+                <td>@rec.Message</td>
+                <td>@rec.EstimatedSavings.ToString("C")</td>
+                <td>@rec.Confidence %</td>
+                <td>
+                   @*  @if (rec.Actionable)
+                    {
+                        <span class="bg-green-200 text-green-800 px-2 py-1 rounded">Actionable</span>
+                    }
+                    else
+                    {
+                        <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded">Review</span>
+                    } *@
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    List<Recommendation> recommendations = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        recommendations = await Http.GetFromJsonAsync<List<Recommendation>>("api/billing/recommendations");
+    }
+}
