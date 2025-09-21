@@ -13,11 +13,11 @@ public class CostRepository :ICostRepository
     {
         _inMemory.AddRange(new[]
         {
-            new NormalizedCost { Provider = "AWS", Service = "EC2", Region = "us-east-1", Date = DateTime.Today.AddDays(-4), UsageAmount = 10, Cost = 25.50m },
-            new NormalizedCost { Provider = "Azure", Service = "VM", Region = "eastus", Date = DateTime.Today.AddDays(-3), UsageAmount = 8, Cost = 20.00m },
-            new NormalizedCost { Provider = "AWS", Service = "S3", Region = "us-west-2", Date = DateTime.Today.AddDays(-2), UsageAmount = 15, Cost = 30.75m },
-            new NormalizedCost { Provider = "Azure", Service = "Blob", Region = "westeurope", Date = DateTime.Today.AddDays(-1), UsageAmount = 12, Cost = 22.10m },
-            new NormalizedCost { Provider = "AWS", Service = "Lambda", Region = "ap-southeast-1", Date = DateTime.Today, UsageAmount = 5, Cost = 10.00m }
+            new NormalizedCost {  Service = "EC2", Region = "us-east-1", Date = DateTime.Today.AddDays(-4), UsageAmount = 10, Cost = 25.50m },
+            new NormalizedCost {  Service = "VM", Region = "eastus", Date = DateTime.Today.AddDays(-3), UsageAmount = 8, Cost = 20.00m },
+            new NormalizedCost {  Service = "S3", Region = "us-west-2", Date = DateTime.Today.AddDays(-2), UsageAmount = 15, Cost = 30.75m },
+            new NormalizedCost {  Service = "Blob", Region = "westeurope", Date = DateTime.Today.AddDays(-1), UsageAmount = 12, Cost = 22.10m },
+            new NormalizedCost {  Service = "Lambda", Region = "ap-southeast-1", Date = DateTime.Today, UsageAmount = 5, Cost = 10.00m }
         });
     }
 
