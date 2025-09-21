@@ -1,38 +1,83 @@
 using CostAdvisor.Shared.Models;
 using CostAdvisor.Core;
 using CostAdvisor.Core.Repositories;
+using CostAdvisor.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace CostAdvisor.Infrastructure.Repositories;
-
-public class CostRepository :ICostRepository
-{
-    private List<NormalizedCost> _inMemory = new(); 
-    // Later replace with EF Core + SQL Server/Postgres
-
-    public CostRepository()
+    public class CostRepository : ICostRepository
     {
-        _inMemory.AddRange(new[]
+        private readonly CostAdvisorDbContext _db;
+
+        public CostRepository(CostAdvisorDbContext db)
         {
-            new NormalizedCost {  Service = "EC2", Region = "us-east-1", Date = DateTime.Today.AddDays(-4), UsageAmount = 10, Cost = 25.50m },
-            new NormalizedCost {  Service = "VM", Region = "eastus", Date = DateTime.Today.AddDays(-3), UsageAmount = 8, Cost = 20.00m },
-            new NormalizedCost {  Service = "S3", Region = "us-west-2", Date = DateTime.Today.AddDays(-2), UsageAmount = 15, Cost = 30.75m },
-            new NormalizedCost {  Service = "Blob", Region = "westeurope", Date = DateTime.Today.AddDays(-1), UsageAmount = 12, Cost = 22.10m },
-            new NormalizedCost {  Service = "Lambda", Region = "ap-southeast-1", Date = DateTime.Today, UsageAmount = 5, Cost = 10.00m }
-        });
+            _db = db;
+        }
+
+        /// <summary>
+        /// Saves costs for a given provider + account. 
+        /// Automatically creates provider/account if not present.
+        /// </summary>
+        public async Task SaveCostsAsync(IEnumerable<NormalizedCost> costs, string providerName, string accountIdentifier)
+        {
+            if (!costs.Any())
+                return;
+
+            // Ensure provider exists
+            var provider = await _db.Providers
+                .FirstOrDefaultAsync(p => p.Name == providerName);
+
+            if (provider == null)
+            {
+                provider = new Provider { Name = providerName };
+                _db.Providers.Add(provider);
+                await _db.SaveChangesAsync();
+            }
+
+            // Ensure account exists
+            var account = await _db.Accounts
+                .FirstOrDefaultAsync(a => a.AccountIdentifier == accountIdentifier && a.ProviderId == provider.Id);
+
+            if (account == null)
+            {
+                account = new Account
+                {
+                    ProviderId = provider.Id,
+                    AccountIdentifier = accountIdentifier
+                };
+                _db.Accounts.Add(account);
+                await _db.SaveChangesAsync();
+            }
+
+            // Link costs to account
+            foreach (var cost in costs)
+            {
+                cost.AccountId = account.Id;
+                _db.NormalizedCosts.Add(cost);
+            }
+
+            await _db.SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Fetches costs between two dates. 
+        /// Optionally filter by provider name.
+        /// </summary>
+        public async Task<IEnumerable<NormalizedCost>> GetCostsAsync(DateTime from, DateTime to, string? providerName = null)
+        {
+            var query = _db.NormalizedCosts
+                .Include(c => c.Account)
+                    .ThenInclude(a => a.Provider)
+                .Include(c => c.Recommendations)
+                .Where(c => c.Date >= from && c.Date <= to);
+
+            if (!string.IsNullOrEmpty(providerName))
+            {
+                query = query.Where(c => c.Account.Provider.Name == providerName);
+            }
+
+            return await query.AsNoTracking().ToListAsync();
+        }
     }
 
-    public Task SaveCostsAsync(IEnumerable<NormalizedCost> costs)
-    {
-        _inMemory.AddRange(costs);
-        return Task.CompletedTask;
-    }
 
-    public Task<IEnumerable<NormalizedCost>> GetCostsAsync(DateTime from, DateTime to)
-    {
-        var results = _inMemory
-            .Where(c => c.Date >= from && c.Date <= to)
-            .ToList();
-
-        return Task.FromResult<IEnumerable<NormalizedCost>>(results);
-    }
-}
