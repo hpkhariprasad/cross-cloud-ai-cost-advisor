@@ -22,9 +22,6 @@ namespace CostAdvisor.Shared.Models
         [Column(TypeName = "decimal(18,2)")]
         public decimal UsageAmount { get; set; }
 
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal Cost { get; set; }
-
         public DateTime Date { get; set; } = DateTime.UtcNow;
 
         // Navigation
