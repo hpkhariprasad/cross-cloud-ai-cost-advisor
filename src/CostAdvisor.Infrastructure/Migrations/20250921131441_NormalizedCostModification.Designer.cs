@@ -3,6 +3,7 @@ using System;
 using CostAdvisor.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace CostAdvisor.Infrastructure.Migrations
 {
     [DbContext(typeof(CostAdvisorDbContext))]
-    partial class CostAdvisorDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250921131441_NormalizedCostModification")]
+    partial class NormalizedCostModification
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
