@@ -1,18 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace CostAdvisor.Shared.Models
 {
+    [Table("NormalizedCosts")]
     public class NormalizedCost
     {
-        public string Provider { get; set; } = string.Empty;   // AWS or Azure
-        public string Service { get; set; } = string.Empty;    // e.g., EC2, S3, VM
+        [Key]
+        public int Id { get; set; }
+
+        [Required]
+        public int AccountId { get; set; }
+
+        [Required, MaxLength(50)]
         public string Region { get; set; } = string.Empty;
-        public DateTime Date { get; set; }
+
+        [Required, MaxLength(100)]
+        public string Service { get; set; } = string.Empty;
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal UsageAmount { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Cost { get; set; }
+
+        public DateTime Date { get; set; } = DateTime.UtcNow;
+
+        // Navigation
+        public Account Account { get; set; } = null!;
+        public ICollection<Recommendation> Recommendations { get; set; } = new List<Recommendation>();
     }
 }
