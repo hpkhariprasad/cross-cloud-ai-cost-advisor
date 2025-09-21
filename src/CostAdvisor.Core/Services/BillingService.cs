@@ -10,7 +10,7 @@ public class BillingService
 
     private readonly IEnumerable<ICloudBillingProvider> _cloudBillingProviders;
 
-    public BillingService(ICostRepository repository,IEnumerable<ICloudBillingProvider> cloudBillingProviders)
+    public BillingService(ICostRepository repository, IEnumerable<ICloudBillingProvider> cloudBillingProviders)
     {
         _repository = repository;
         _cloudBillingProviders = cloudBillingProviders;
@@ -19,25 +19,31 @@ public class BillingService
     // For MVP, mock costs instead of real API calls
     public async Task FetchAndStoreAsync(string accountId, DateTime start, DateTime end)
     {
-        var allCosts = new List<NormalizedCost>();
-
         foreach (var provider in _cloudBillingProviders)
         {
             var billingData = await provider.GetBillingDataAsync(accountId, start, end);
+            var groupedByAccount = billingData.UsageDetails
+        .GroupBy(u => u.AccountIdentifier);
 
-            foreach (var usage in billingData.UsageDetails)
+            foreach (var accountGroup in groupedByAccount)
             {
-                allCosts.Add(new NormalizedCost
+                var accountCosts = new List<NormalizedCost>();
+                foreach (var usage in accountGroup)
                 {
-                    Provider = provider.GetType().Name.Replace("Dummy", "").Replace("BillingProvider",""),
-                    Region = usage.Region,
-                    Date = usage.Date,
-                    Service = usage.Service,
-                    Cost = Math.Round(usage.Cost,2)
-                });
-            }
+                    accountCosts.Add(new NormalizedCost
+                    {
+                        AccountId = 0,
+                        Region = usage.Region,
+                        Date = usage.Date,
+                        Service = usage.Service,
+                        UsageAmount = Math.Round(usage.Cost, 2)
+                    });
+                }
+                var providerName = provider.GetType().Name.Replace("Dummy", "").Replace("BillingProvider", "");
 
-            await _repository.SaveCostsAsync(allCosts);
+                // Save costs for this account identifier
+                await _repository.SaveCostsAsync(accountCosts, providerName, accountGroup.Key);
+            }
         }
     }
 
