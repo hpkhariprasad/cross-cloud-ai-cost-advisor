@@ -16,12 +16,6 @@ namespace CostAdvisor.API.Controllers
             _billingService = billingService;
         }
 
-        [HttpGet("summary")]
-        public async Task<IActionResult> GetSummary(DateTime from, DateTime to)
-        {
-            var costs = await _billingService.GetCostsAsync(from, to);
-            return Ok(costs);
-        }
 
         [HttpPost("fetch")]
         public async Task<IActionResult> Fetch([FromBody] FetchRequest request)
@@ -29,5 +23,28 @@ namespace CostAdvisor.API.Controllers
             await _billingService.FetchAndStoreAsync(request.AccountId, request.From, request.To);
             return Ok(new { message = "Costs fetched and stored" });
         }
+
+        [HttpGet("costs")]
+        public async Task<IActionResult> GetCosts(DateTime from, DateTime to)
+        {
+            var costs = await _billingService.GetCostsAsync(from, to);
+            return Ok(costs);
+        }
+
+        [HttpGet("dashboard")]
+        public async Task<IActionResult> GetDashboard(DateTime from,DateTime to)
+        {
+            var summary = await _billingService.GetDashboardSummaryAsync(from,to);
+            return Ok(summary);
+        }
+
+        [HttpGet("recommendations")]
+        public async Task<IActionResult> GetRecommendations(DateTime from, DateTime to)
+        {
+            var costs = await _billingService.GetCostsAsync(from, to);
+            var recs = costs.SelectMany(c => c.Recommendations).ToList();
+            return Ok(recs);
+        }
+
     }
 }

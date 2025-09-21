@@ -49,4 +49,44 @@ public class BillingService
 
     public Task<IEnumerable<NormalizedCost>> GetCostsAsync(DateTime from, DateTime to) =>
         _repository.GetCostsAsync(from, to);
+
+    public Task<DashboardSummary> GetDashboardSummaryAsync(DateTime from, DateTime to)
+    {
+        var costs = _repository.GetCostsAsync(from, to).Result;
+        var summary = new DashboardSummary
+        {
+            TotalCost = costs.Sum(c => c.UsageAmount),
+            ResourceCount = costs.Count(),
+            TopProvider = costs.GroupBy(c => c.Account?.AccountIdentifier ?? "")
+                                  .OrderByDescending(g => g.Sum(x => x.UsageAmount))
+                                  .FirstOrDefault()?.Key ?? "",
+            TopService = costs.GroupBy(c => c.Service)
+                                 .OrderByDescending(g => g.Sum(x => x.UsageAmount))
+                                 .FirstOrDefault()?.Key ?? "",
+            ProviderBreakdown = costs.GroupBy(c => c.Account?.AccountIdentifier ?? "")
+                                        .Select(g => new ProviderCostSummary
+                                        {
+                                            Provider = g.Key,
+                                            TotalCost = g.Sum(x => x.UsageAmount),
+                                            ResourceCount = g.Count()
+                                        }).ToList(),
+            ServiceBreakdown = costs.GroupBy(c => c.Service)
+                                       .OrderByDescending(g => g.Sum(x => x.UsageAmount))
+                                       .Take(5)
+                                       .Select(g => new ServiceCostSummary
+                                       {
+                                           Service = g.Key,
+                                           TotalCost = g.Sum(x => x.UsageAmount)
+                                       }).ToList(),
+            MonthlyTrends = costs.GroupBy(c => new { c.Date.Year, c.Date.Month })
+                                    .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                                    .Select(g => new MonthlyCostTrend
+                                    {
+                                        Year = g.Key.Year,
+                                        Month = g.Key.Month,
+                                        TotalCost = g.Sum(x => x.UsageAmount)
+                                    }).ToList()
+        };
+        return Task.FromResult(summary);
+    }
 }
