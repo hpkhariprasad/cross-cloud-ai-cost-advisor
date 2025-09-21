@@ -10,7 +10,7 @@ namespace CostAdvisor.Core.Providers
         Task<BillingData> GetBillingDataAsync(string accountId, DateTime start, DateTime end);
     }
 
-    public record UsageRecord(DateTime Date, string Service, decimal Cost,string Region);
+    public record UsageRecord(DateTime Date,string AccountIdentifier, string Service, decimal Cost,string Region);
 
     public record BillingData(decimal MonthlyCost, IEnumerable<UsageRecord> UsageDetails);
 }

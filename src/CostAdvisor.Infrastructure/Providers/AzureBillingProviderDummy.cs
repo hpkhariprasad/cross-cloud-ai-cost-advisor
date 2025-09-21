@@ -21,6 +21,7 @@ namespace CostAdvisor.Infrastructure.Providers
             var data = Enumerable.Range(0, (end - start).Days + 1)
                 .Select(i => new UsageRecord(
                     start.AddDays(i),
+                    "azure-sub-" + _random.Next(1000, 1003),
                     _random.Next(0, 2) == 0 ? "Azure App Service" : "Azure SQL Database",
                     (decimal)_random.NextDouble() * 50m ,
                     _random.Next(0,2) ==0 ? "East US" : "West Europe"

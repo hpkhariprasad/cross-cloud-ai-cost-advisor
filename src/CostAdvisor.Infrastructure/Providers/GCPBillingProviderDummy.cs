@@ -22,6 +22,7 @@ namespace CostAdvisor.Infrastructure.Providers
             var data = Enumerable.Range(0, (end - start).Days + 1)
                 .Select(i => new UsageRecord(
                     start.AddDays(i),
+                    "gcp-proj-" + _random.Next(1000, 1003),
                     _random.Next(0, 2) == 0 ? "Compute Engine" : "Cloud Storage",
                     (decimal)_random.NextDouble() * 40m,
                     _random.Next(0, 2) == 0 ? "us-central1" : "europe-west1"

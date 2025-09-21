@@ -17,9 +17,11 @@ namespace CostAdvisor.Infrastructure.Providers
         {
             var services = new[] { "EC2", "S3", "RDS", "Lambda" };
             var regions = new[] { "us-east-1", "us-west-2", "eu-west-1", "ap-southeast-1" };
+            var accountIdentifier = new[] { "aws-ac-1234", "aws-ac-356", "aws-ac-555" };
             var data = Enumerable.Range(0, (end - start).Days + 1)
                 .Select(i => new UsageRecord(
                     start.AddDays(i),
+                    accountIdentifier[_random.Next(accountIdentifier.Length)],
                     services[_random.Next(services.Length)],
                     (decimal)_random.NextDouble() * 60m,
                     regions[_random.Next(regions.Length)]
