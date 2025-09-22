@@ -8,17 +8,24 @@ public class BillingService
 {
     private readonly ICostRepository _repository;
 
+    private readonly IRecommendationService _recommendationService;
+
+    private readonly IRecommendationRepository _recommendationRepository;
+
     private readonly IEnumerable<ICloudBillingProvider> _cloudBillingProviders;
 
-    public BillingService(ICostRepository repository, IEnumerable<ICloudBillingProvider> cloudBillingProviders)
+    public BillingService(ICostRepository repository,IRecommendationService recommendationService, IRecommendationRepository recommendationRepository , IEnumerable<ICloudBillingProvider> cloudBillingProviders)
     {
         _repository = repository;
+        _recommendationService = recommendationService;
+        _recommendationRepository = recommendationRepository;
         _cloudBillingProviders = cloudBillingProviders;
     }
 
     // For MVP, mock costs instead of real API calls
     public async Task FetchAndStoreAsync(string accountId, DateTime start, DateTime end)
     {
+        List<NormalizedCost> allCosts = new();
         foreach (var provider in _cloudBillingProviders)
         {
             var billingData = await provider.GetBillingDataAsync(accountId, start, end);
@@ -40,10 +47,16 @@ public class BillingService
                     });
                 }
                 var providerName = provider.GetType().Name.Replace("Dummy", "").Replace("BillingProvider", "");
-
                 // Save costs for this account identifier
                 await _repository.SaveCostsAsync(accountCosts, providerName, accountGroup.Key);
+                allCosts.AddRange(accountCosts);
             }
+        }
+        if(allCosts.Any())
+        {
+            var recsByCostId = await _recommendationService.GenerateRecommendationsAsync(allCosts);
+            var allRecs = recsByCostId.Values.SelectMany(x => x);
+            await _recommendationRepository.SaveRecommendationsAsync(allRecs);
         }
     }
 
