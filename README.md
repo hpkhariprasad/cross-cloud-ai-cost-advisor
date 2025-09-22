@@ -10,7 +10,7 @@ This project bridges the gap between siloed billing consoles by providing a **un
 
 | Component | Implemented | In-Progress / Planned |
 |---|---|---|
-| Cost data fetching (AWS & Azure) | ✅ | Add GCP billing provider |
+| Cost data fetching (AWS , Azure & GCP) | ✅ | |
 | Normalizing costs schema + storage | ✅ | Refinements of entities & tags |
 | UI for costs & charts | ✅ | Dashboard cards, service breakdown & trends |
 | OpenAI‐powered recommendations | ⚙️ Partial (fake / stub data) | Real integration + recommendations stored |
