@@ -1,54 +1,62 @@
 ﻿@page "/costs"
 @using CostAdvisor.Shared.Models
-@inject HttpClient Http
+@using CostAdvisor.UI.Services
+@rendermode InteractiveServer
+@inject ICostAdvisorService CostService
 
 <PageTitle>Costs</PageTitle>
 
-<div class="mb-4 flex gap-4">
-    <input placeholder="Filter by provider..." class="input" @bind="providerFilter" />
-    <input placeholder="Filter by service..." class="input" @bind="serviceFilter" />
-    <input placeholder="Filter by region..." class="input" @bind="regionFilter" />
+<h3 class="text-2xl font-semibold mb-6">Resource Costs</h3>
+
+<button class="btn btn-primary px-6 py-2 rounded bg-blue-600 text-white font-semibold shadow hover:bg-blue-700 transition mb-4" @onclick="FetchData">Fetch Latest Costs</button>
+
+<div class="flex flex-wrap items-center gap-4 mb-4">
+    <input placeholder="Filter by provider..." class="px-4 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]" @bind="providerFilter" @oninput="OnFilterChanged" />
+    <input placeholder="Filter by service..." class="px-4 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]" @bind="serviceFilter" @oninput="OnFilterChanged" />
+    <input placeholder="Filter by region..." class="px-4 py-2 border rounded shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 min-w-[200px]" @bind="regionFilter" @oninput="OnFilterChanged" />
 </div>
 
-<table class="table-auto w-full">
-    <thead>
-        <tr>
-            <th>Provider</th>
-            <th>Region</th>
-            <th>Service</th>
-            <th>Usage</th>
-            <th>Cost</th>
-            <th>Date</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var cost in filteredCosts)
-        {
-            <tr @onclick="() => ToggleExpand(cost.Id)" class="cursor-pointer hover:bg-gray-100">
-                <td>@cost.Account</td>
-                <td>@cost.Region</td>
-                <td>@cost.Service</td>
-                <td>@cost.UsageAmount</td>
-                <td>@cost.UsageAmount.ToString("C")</td>
-                <td>@cost.Date.ToShortDateString()</td>
+<div class="overflow-x-auto">
+    <table class="table-auto w-full border border-gray-300 rounded-lg shadow">
+        <thead class="bg-gray-100">
+            <tr>
+                <th class="px-4 py-2 text-left font-semibold">Provider</th>
+                <th class="px-4 py-2 text-left font-semibold">Region</th>
+                <th class="px-4 py-2 text-left font-semibold">Service</th>
+                <th class="px-4 py-2 text-left font-semibold">Usage</th>
+                <th class="px-4 py-2 text-left font-semibold">Cost</th>
+                <th class="px-4 py-2 text-left font-semibold">Date</th>
             </tr>
-            @if (expandedId == cost.Id && cost.Tags != null)
+        </thead>
+        <tbody>
+            @foreach (var cost in filteredCosts)
             {
-                <tr>
-                    <td colspan="6">
-                        <strong>Tags:</strong>
-                        <ul>
-                            @foreach (var tag in cost.Tags)
-                            {
-                                <li>@tag.Key: @tag.Value</li>
-                            }
-                        </ul>
-                    </td>
+                <tr @onclick="() => ToggleExpand(cost.Id)" class="cursor-pointer hover:bg-blue-50 transition">
+                    <td class="px-4 py-2">@cost.Account?.AccountIdentifier</td>
+                    <td class="px-4 py-2">@cost.Region</td>
+                    <td class="px-4 py-2">@cost.Service</td>
+                    <td class="px-4 py-2">@cost.UsageAmount</td>
+                    <td class="px-4 py-2">@cost.UsageAmount.ToString("C")</td>
+                    <td class="px-4 py-2">@cost.Date.ToShortDateString()</td>
                 </tr>
+                @if (expandedId == cost.Id && cost.Tags != null)
+                {
+                    <tr class="bg-gray-50">
+                        <td colspan="6" class="px-4 py-2">
+                            <strong>Tags:</strong>
+                            <ul class="list-disc ml-6">
+                                @foreach (var tag in cost.Tags)
+                                {
+                                    <li>@tag.Key: @tag.Value</li>
+                                }
+                            </ul>
+                        </td>
+                    </tr>
+                }
             }
-        }
-    </tbody>
-</table>
+        </tbody>
+    </table>
+</div>
 
 @code {
     List<NormalizedCost> costs = new();
@@ -61,7 +69,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        costs = await Http.GetFromJsonAsync<List<NormalizedCost>>("api/billing/costs");
+        var from = DateTime.UtcNow.AddDays(-30);
+        var to = DateTime.UtcNow;
+        costs = await CostService.GetResourceCostsAsync(from,to);
         filteredCosts = costs;
     }
 
@@ -69,13 +79,23 @@
     {
         expandedId = expandedId == id ? -1 : id;
     }
+    protected async Task FetchData()
+    {
+        await CostService.FetchCostsAsync();
+        var from = DateTime.UtcNow.AddDays(-30);
+        var to = DateTime.UtcNow;
+        costs = await CostService.GetResourceCostsAsync(from,to);
+        OnFilterChanged();
+        StateHasChanged();
+    }
 
-    void OnFilterChanged()
+    void OnFilterChanged(ChangeEventArgs? e = null)
     {
         filteredCosts = costs.Where(c =>
-            (string.IsNullOrEmpty(providerFilter) || c.Account.AccountIdentifier.Contains(providerFilter, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(providerFilter) || c.Account?.AccountIdentifier?.Contains(providerFilter, StringComparison.OrdinalIgnoreCase) == true) &&
             (string.IsNullOrEmpty(serviceFilter) || c.Service.Contains(serviceFilter, StringComparison.OrdinalIgnoreCase)) &&
             (string.IsNullOrEmpty(regionFilter) || c.Region.Contains(regionFilter, StringComparison.OrdinalIgnoreCase))
         ).ToList();
+        StateHasChanged();
     }
 }

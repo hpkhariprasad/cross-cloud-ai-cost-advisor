@@ -1,6 +1,7 @@
 ﻿@page "/recommendations"
 @using CostAdvisor.Shared.Models
-@inject HttpClient Http
+@using CostAdvisor.UI.Services
+@inject ICostAdvisorService CostService
 
 <PageTitle>Recommendations</PageTitle>
 
@@ -42,6 +43,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        recommendations = await Http.GetFromJsonAsync<List<Recommendation>>("api/billing/recommendations");
+        var from = DateTime.UtcNow.AddDays(-30);
+        var to = DateTime.UtcNow;
+        recommendations = await CostService.GetRecommendationsAsync(from,to);
     }
 }
