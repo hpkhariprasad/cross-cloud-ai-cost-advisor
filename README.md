@@ -6,6 +6,20 @@ This project bridges the gap between siloed billing consoles by providing a **un
 
 ---
 
+## ✨ Current Status
+
+| Component | Implemented | In-Progress / Planned |
+|---|---|---|
+| Cost data fetching (AWS & Azure) | ✅ | Add GCP billing provider |
+| Normalizing costs schema + storage | ✅ | Refinements of entities & tags |
+| UI for costs & charts | ✅ | Dashboard cards, service breakdown & trends |
+| OpenAI‐powered recommendations | ⚙️ Partial (fake / stub data) | Real integration + recommendations stored |
+| Scheduler (periodic fetch) | ⚙️ (design proposed) | Setup (Hangfire or Quartz.NET) |
+
+---
+
+---
+
 ## ✨ Features (MVP)
 
 - 🔄 Fetch AWS (Cost Explorer) and Azure (Cost Management) billing data  
@@ -31,7 +45,17 @@ flowchart TD
     E --> H[Blazor Dashboard]
     F --> H[Blazor Dashboard]
 ```
+## 🏛 Architecture & Schema
 
+- **Providers** → AWS, Azure (fake or real billing APIs)  
+- **Accounts** → Each provider + account identifier (e.g. AWS account, Azure subscription)  
+- **NormalizedCosts** table:  
+  - `Id`, `AccountId`, `Region`, `Service`, `UsageAmount`, `Cost`, `Date`  
+  - Navigation from `Account` → `Provider`  
+- **Recommendations** table:  
+  - `Id`, `CostId` (NormalizedCost), `Message`, `Confidence`, `EstimatedSavings`, `CreatedAt`
+
+---
 ## 📂 Project Structure
 
 ```
@@ -50,6 +74,15 @@ cross-cloud-ai-cost-advisor/
 
 ## 🚀 Getting Started
 
+The app supports both:
+
+- **Fake mode**: Generate synthetic billing / recommendation data (useful for development)  
+- **Real mode**: Connect to real cloud billing APIs + OpenAI (when credentials configured)
+You will need:
+
+- AWS / Azure credentials (if using real billing APIs)  
+- OpenAI API key (for real recommendations)  
+- Database connection string (Postgres SQL)
 
 1. Clone the Repository
 ```
@@ -100,8 +133,6 @@ dotnet run
 
 ## 🔄 Roadmap
 
- Add GCP billing integration
-
  Forecasting with AI narrative reports
 
  Custom rules engine & alerts (Slack/Teams)
@@ -115,7 +146,7 @@ dotnet run
 
 ---
 
-.NET 8 (ASP.NET Core Web API, Blazor Server)
+.NET 9 (ASP.NET Core Web API, Blazor Server)
 
 AWS Cost Explorer API
 
