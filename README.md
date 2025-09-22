@@ -36,8 +36,8 @@ This project bridges the gap between siloed billing consoles by providing a **un
 
 ```mermaid
 flowchart TD
-    A[AWS Cost Explorer] --> C[MCP Connectors]
-    B[Azure Cost Mgmt API] --> C[MCP Connectors]
+    A[AWS Cost Explorer] --> C[API]
+    B[Azure Cost Mgmt API] --> C[API]
     C --> D[BillingService]
     D --> E[(Database)]
     D --> F[InsightsService]
