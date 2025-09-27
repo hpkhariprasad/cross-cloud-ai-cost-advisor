@@ -20,7 +20,6 @@ namespace CostAdvisor.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // Fluent API configurations can go here if needed
             modelBuilder.Entity<Provider>()
                .HasMany(p => p.Accounts)
                .WithOne(a => a.Provider)

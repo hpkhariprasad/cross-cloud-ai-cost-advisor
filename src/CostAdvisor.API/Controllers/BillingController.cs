@@ -27,8 +27,19 @@ namespace CostAdvisor.API.Controllers
         [HttpGet("costs")]
         public async Task<IActionResult> GetCosts(DateTime from, DateTime to)
         {
-            var costs = await _billingService.GetCostsAsync(from, to);
-            return Ok(costs);
+            if (from > to)
+            {
+                return BadRequest("Invalid date range.");
+            }
+            try
+            {
+                var costs = await _billingService.GetCostsAsync(from, to);
+                return Ok(costs);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
         }
 
         [HttpGet("dashboard")]
