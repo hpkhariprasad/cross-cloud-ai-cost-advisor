@@ -2,49 +2,100 @@
 @using CostAdvisor.Shared.Models
 @using CostAdvisor.UI.Services
 @inject ICostAdvisorService CostService
+@rendermode InteractiveServer
 
 <PageTitle>Recommendations</PageTitle>
 
-<table class="table-auto w-full">
-    <thead>
-        <tr>
-            <th>Category</th>
-            <th>Message</th>
-            <th>Estimated Savings</th>
-            <th>Confidence</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var rec in recommendations)
-        {
+<div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+    <h3 class="text-xl font-semibold text-gray-800">Recommendations</h3>
+    <button class="btn-primary px-4 py-2" @onclick="FetchData">
+        <i class="fas fa-sync-alt mr-2"></i> Fetch Latest
+    </button>
+</div>
+
+<div class="mb-4 w-full">
+    <div class="flex flex-wrap gap-4">
+        <input placeholder="Filter by category..." class="filter-input flex-1 min-w-[200px]"
+               @bind="CategoryFilter" @bind:event="oninput" />
+        <input placeholder="Filter by message..." class="filter-input flex-1 min-w-[200px]"
+               @bind="MessageFilter" @bind:event="oninput" />
+    </div>
+</div>
+
+<div class="overflow-x-auto w-full">
+    <table class="table-auto w-full border border-gray-300 rounded-lg shadow">
+        <thead class="bg-gray-100">
             <tr>
-                <td>@rec.Category</td>
-                <td>@rec.Message</td>
-                <td>@rec.EstimatedSavings.ToString("C")</td>
-                <td>@rec.Confidence %</td>
-                <td>
-                   @*  @if (rec.Actionable)
-                    {
-                        <span class="bg-green-200 text-green-800 px-2 py-1 rounded">Actionable</span>
-                    }
-                    else
-                    {
-                        <span class="bg-yellow-200 text-yellow-800 px-2 py-1 rounded">Review</span>
-                    } *@
-                </td>
+                <th class="px-4 py-2 text-left font-semibold">Category</th>
+                <th class="px-4 py-2 text-left font-semibold">Message</th>
+                <th class="px-4 py-2 text-left font-semibold">Estimated Savings</th>
+                <th class="px-4 py-2 text-left font-semibold">Confidence</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var rec in filteredRecommendations)
+            {
+                <tr class="hover:bg-blue-50 transition">
+                    <td class="px-4 py-2">@rec.Category</td>
+                    <td class="px-4 py-2">@rec.Message</td>
+                    <td class="px-4 py-2">@rec.EstimatedSavings.ToString("C")</td>
+                    <td class="px-4 py-2">@rec.Confidence %</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
 @code {
     List<Recommendation> recommendations = new();
+    List<Recommendation> filteredRecommendations = new();
+
+    private string _categoryFilter = "";
+    private string _messageFilter = "";
+
+    public string CategoryFilter
+    {
+        get => _categoryFilter;
+        set
+        {
+            _categoryFilter = value;
+            ApplyFilters();
+        }
+    }
+    public string MessageFilter
+    {
+        get => _messageFilter;
+        set
+        {
+            _messageFilter = value;
+            ApplyFilters();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
+        await LoadRecommendations();
+    }
+
+    async Task LoadRecommendations()
+    {
         var from = DateTime.UtcNow.AddDays(-30);
         var to = DateTime.UtcNow;
-        recommendations = await CostService.GetRecommendationsAsync(from,to);
+        recommendations = await CostService.GetRecommendationsAsync(from, to);
+        ApplyFilters();
+    }
+
+    void ApplyFilters()
+    {
+        filteredRecommendations = recommendations.Where(r =>
+            (string.IsNullOrEmpty(CategoryFilter) || r.Category.Contains(CategoryFilter, StringComparison.OrdinalIgnoreCase)) &&
+            (string.IsNullOrEmpty(MessageFilter) || r.Message.Contains(MessageFilter, StringComparison.OrdinalIgnoreCase))
+        ).ToList();
+        StateHasChanged();
+    }
+
+    void FetchData()
+    {
+        LoadRecommendations();
     }
 }

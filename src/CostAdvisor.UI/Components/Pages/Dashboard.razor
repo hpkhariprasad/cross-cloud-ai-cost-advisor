@@ -1,92 +1,110 @@
 ﻿@page "/dashboard"
 @using CostAdvisor.Shared.Models
 @using CostAdvisor.UI.Services
+@using Blazorise
+@using Blazorise.Charts
+@rendermode InteractiveServer
 @inject ICostAdvisorService CostService
+@implements IDisposable
 
 <PageTitle>Dashboard</PageTitle>
 
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-    <Card class="rounded-lg shadow bg-white p-6 flex flex-col items-center justify-center">
+<div class="flex-horizontal-cards mb-8">
+    <Card class="card-horizontal">
         <CardContent>
-            <h2 class="text-lg font-bold text-gray-700 mb-2 text-center">Total Cost</h2>
-            <p class="text-3xl font-semibold text-blue-700">@dashboard?.TotalCost.ToString("C")</p>
+            <h2>Total Cost</h2>
+            <p>@dashboard?.TotalCost.ToString("C")</p>
         </CardContent>
     </Card>
-    <Card class="rounded-lg shadow bg-white p-6 flex flex-col items-center justify-center">
+    <Card class="card-horizontal">
         <CardContent>
-            <h2 class="text-lg font-bold text-gray-700 mb-2 text-center">Resources</h2>
-            <p class="text-3xl font-semibold text-blue-700">@dashboard?.ResourceCount</p>
+            <h2>Resources</h2>
+            <p>@dashboard?.ResourceCount</p>
         </CardContent>
     </Card>
-    <Card class="rounded-lg shadow bg-white p-6 flex flex-col items-center justify-center">
+    <Card class="card-horizontal">
         <CardContent>
-            <h2 class="text-lg font-bold text-gray-700 mb-2 text-center">Top Provider</h2>
-            <p class="text-2xl font-semibold text-green-700">@dashboard?.TopProvider</p>
+            <h2>Top Provider</h2>
+            <p>@dashboard?.TopProvider</p>
         </CardContent>
     </Card>
-    <Card class="rounded-lg shadow bg-white p-6 flex flex-col items-center justify-center">
+    <Card class="card-horizontal">
         <CardContent>
-            <h2 class="text-lg font-bold text-gray-700 mb-2 text-center">Top Service</h2>
-            <p class="text-2xl font-semibold text-purple-700">@dashboard?.TopService</p>
-        </CardContent>
-    </Card>
-</div>
-
-<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-    <!-- Provider Breakdown -->
-    <Card class="rounded-lg shadow bg-white p-6">
-        <CardContent>
-            <h2 class="font-bold mb-4 text-gray-700 text-xl">Provider Breakdown</h2>
-            <div class="flex justify-center items-center">
-                <ResponsiveContainer width="100%" height="300">
-                    <PieChart>
-                        <Pie Data="@providerData" DataKey="value" NameKey="name" OuterRadius="100" Fill="#8884d8" Label />
-                        <Tooltip />
-                    </PieChart>
-                </ResponsiveContainer>
-            </div>
-        </CardContent>
-    </Card>
-
-    <!-- Monthly Trend -->
-    <Card class="rounded-lg shadow bg-white p-6">
-        <CardContent>
-            <h2 class="font-bold mb-4 text-gray-700 text-xl">Monthly Trend</h2>
-            <div class="flex justify-center items-center">
-                <ResponsiveContainer width="100%" height="300">
-                    <LineChart Data="@trendData">
-                        <XAxis DataKey="month" />
-                        <YAxis />
-                        <Tooltip />
-                        <Line Type="monotone" DataKey="value" Stroke="#82ca9d" />
-                    </LineChart>
-                </ResponsiveContainer>
-            </div>
+            <h2>Top Service</h2>
+            <p>@dashboard?.TopService</p>
         </CardContent>
     </Card>
 </div>
 
-<!-- Top Services -->
-<Card class="mt-6 rounded-lg shadow bg-white p-6">
+
+<!-- ================= Charts Section ================= -->
+<div class="flex-horizontal-chart-cards">
+    <div class="card-horizontal">
+        <Card class="h-full w-full p-4">
+            <CardContent class="flex flex-col items-center h-full w-full">
+                <h2 class="text-center font-bold text-xl mb-4">Provider Breakdown</h2>
+                <PieChart @key="1" TItem="double" @ref="providerChart" Class="w-full h-full" />
+            </CardContent>
+        </Card>
+    </div>
+
+    <div class="card-chart-horizontal">
+        <Card class="h-full w-full p-4">
+            <CardContent class="flex flex-col items-center h-full w-full">
+                <h2 class="text-center font-bold text-xl mb-4">Monthly Trend</h2>
+                <LineChart @key="2" TItem="double" @ref="trendChart" Class="w-full h-full" />
+            </CardContent>
+        </Card>
+    </div>
+</div>
+
+
+
+
+
+<!-- ================= Top Services Table ================= -->
+<Card class="rounded-lg shadow bg-white p-6 w-full">
     <CardContent>
-        <h2 class="font-bold mb-4 text-gray-700 text-xl">Top Services</h2>
-        <table class="table-auto w-full border border-gray-300 rounded-lg">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="text-left px-4 py-2 font-semibold">Service</th>
-                    <th class="text-right px-4 py-2 font-semibold">Total Cost</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var svc in dashboard?.ServiceBreakdown ?? new())
-                {
-                    <tr class="hover:bg-blue-50 transition">
-                        <td class="px-4 py-2">@svc.Service</td>
-                        <td class="text-right px-4 py-2">@svc.TotalCost.ToString("C")</td>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-gray-700 font-bold text-xl">Top Services</h2>
+            <button class="btn-primary" @onclick="FetchData">
+                <i class="fas fa-sync-alt mr-2"></i> Refresh
+            </button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="table-auto w-full border border-gray-300 rounded-lg">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="text-left px-4 py-2 font-semibold">Service</th>
+                        <th class="text-right px-4 py-2 font-semibold">Total Cost</th>
+                        <th class="text-left px-4 py-2 font-semibold">Status</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var svc in dashboard?.ServiceBreakdown ?? new())
+                    {
+                        <tr class="hover:bg-blue-50 transition">
+                            <td class="px-4 py-2">@svc.Service</td>
+                            <td class="text-right px-4 py-2">@svc.TotalCost.ToString("C")</td>
+                            <td class="px-4 py-2">
+                                @if (svc.TotalCost > 1000)
+                                {
+                                    <span class="badge badge-high">High ↑</span>
+                                }
+                                else if (svc.TotalCost >= 100)
+                                {
+                                    <span class="badge badge-medium">Medium →</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-low">Low ↓</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </CardContent>
 </Card>
 
@@ -94,6 +112,15 @@
     DashboardSummary? dashboard;
     List<object> providerData = new();
     List<object> trendData = new();
+    PieChart<double>? providerChart;
+    LineChart<double>? trendChart;
+
+    List<double> providerValues = new();
+    List<string> providerLabels = new();
+    List<string> providerColors = new();
+
+    List<double> trendValues = new();
+    List<string> trendLabels = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -104,10 +131,67 @@
         if (dashboard != null)
         {
             providerData = dashboard.ProviderBreakdown
-                .Select(p => new { name = p.Provider, value = p.TotalCost }).Cast<object>().ToList();
+                .Select(p => new { name = p.Provider, value = p.TotalCost })
+                .Cast<object>()
+                .ToList();
 
             trendData = dashboard.MonthlyTrends
-                .Select(m => new { month = $"{m.Month}/{m.Year}", value = m.TotalCost }).Cast<object>().ToList();
+                .Select(m => new { month = $"{m.Month}/{m.Year}", value = m.TotalCost })
+                .Cast<object>()
+                .ToList();
+
+            providerLabels = dashboard.ProviderBreakdown.Select(p => p.Provider).ToList();
+            providerValues = dashboard.ProviderBreakdown.Select(p =>(double)p.TotalCost).ToList();
+            providerColors = providerValues.Select((v, i) => $"hsl({i * 60 % 360}, 70%, 60%)").ToList();
+            providerChart.Clear();
+            providerChart.AddLabels(providerLabels.ToArray());
+            providerChart.AddDataSet(new PieChartDataset<double>
+            {
+                Data = providerValues,
+                BackgroundColor = providerColors
+            });
+            providerChart.Update();
+
+            trendLabels = dashboard.MonthlyTrends.Select(m => $"{m.Month}/{m.Year}").ToList();
+            trendValues = dashboard.MonthlyTrends.Select(m => (double)m.TotalCost).ToList();
+            trendChart.Clear();
+            trendChart.AddLabels(trendLabels.ToArray());
+            trendChart.AddDataSet(new LineChartDataset<double>
+            {
+                Data = trendValues,
+                BorderColor = "#4f46e5",
+                Fill = false,
+                BorderWidth = 3,
+                Label = "Cost"
+            });
+
+            trendChart.Update();
+        }
+    }
+
+    public void Dispose()
+    {
+        providerChart?.Dispose();
+        trendChart?.Dispose();
+    }
+
+    protected async Task FetchData()
+    {
+        var from = DateTime.UtcNow.AddDays(-30);
+        var to = DateTime.UtcNow;
+        dashboard = await CostService.GetDashboardAsync(from, to);
+
+        if (dashboard != null)
+        {
+            providerData = dashboard.ProviderBreakdown
+                .Select(p => new { name = p.Provider, value = p.TotalCost })
+                .Cast<object>()
+                .ToList();
+
+            trendData = dashboard.MonthlyTrends
+                .Select(m => new { month = $"{m.Month}/{m.Year}", value = m.TotalCost })
+                .Cast<object>()
+                .ToList();
         }
     }
 }

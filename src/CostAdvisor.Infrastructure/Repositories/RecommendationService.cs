@@ -50,7 +50,7 @@ Here is a list of cloud costs:
 
 For each line (by Id), generate up to 2 recommendations. 
 Format one recommendation per line exactly like this:
-Id=<CostId> | Message | Confidence (0-100) | EstimatedSavings (numeric)
+Id=<CostId> | Message | Confidence (0-100) | EstimatedSavings (numeric) | Service
 ");
                 var messages = new List<ChatMessage> { systemMessage, userMessage };
 
@@ -77,7 +77,7 @@ Id=<CostId> | Message | Confidence (0-100) | EstimatedSavings (numeric)
             {
                 // Example: "Id=12 | Right-size VMs | 85 | 120"
                 var parts = line.Split('|');
-                if (parts.Length < 4) continue;
+                if (parts.Length < 5) continue;
 
                 if (!int.TryParse(parts[0].Replace("Id=", "").Trim(), out var costId))
                     continue;
@@ -85,6 +85,7 @@ Id=<CostId> | Message | Confidence (0-100) | EstimatedSavings (numeric)
                 var message = parts[1].Trim();
                 var confidence = decimal.TryParse(parts[2].Trim().Replace("%", ""), out var c) ? c : 0m;
                 var savings = decimal.TryParse(parts[3].Trim(), out var s) ? s : 0m;
+                var service = parts[4].Trim();
 
                 var rec = new Recommendation
                 {
@@ -92,7 +93,8 @@ Id=<CostId> | Message | Confidence (0-100) | EstimatedSavings (numeric)
                     Message = message,
                     Confidence = confidence,
                     EstimatedSavings = savings,
-                    CreatedOn = DateTime.UtcNow
+                    CreatedOn = DateTime.UtcNow,
+                    Category = service
                 };
 
                 if (!dict.ContainsKey(costId))
@@ -109,8 +111,8 @@ Id=<CostId> | Message | Confidence (0-100) | EstimatedSavings (numeric)
                 c => c.Id,
                 c => new List<Recommendation>
                 {
-                new Recommendation { CostId = c.Id, Message = "Fake rec: move to reserved instances", Confidence = 75, EstimatedSavings = 50, CreatedOn = DateTime.UtcNow },
-                new Recommendation { CostId = c.Id, Message = "Fake rec: reduce storage tier", Confidence = 60, EstimatedSavings = 20, CreatedOn = DateTime.UtcNow }
+                new Recommendation { CostId = c.Id,Category=c.Service, Message = "Fake rec: move to reserved instances", Confidence = 75, EstimatedSavings = 50, CreatedOn = DateTime.UtcNow },
+                new Recommendation { CostId = c.Id,Category=c.Service, Message = "Fake rec: reduce storage tier", Confidence = 60, EstimatedSavings = 20, CreatedOn = DateTime.UtcNow }
                 });
         }
     }

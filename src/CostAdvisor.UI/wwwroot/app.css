@@ -72,3 +72,158 @@ th {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+/* Page container card */
+.page-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* Button */
+.btn-primary {
+    background: linear-gradient(to right, #0078d4, #00a1c9);
+    color: #fff;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    border: none;
+    display: flex;
+    align-items: center;
+    transition: background 0.2s ease;
+}
+
+    .btn-primary:hover {
+        background: linear-gradient(to right, #005fa3, #0083a6);
+    }
+
+/* Filters */
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.filter-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    outline: none;
+    transition: border 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .filter-input:focus {
+        border-color: #0078d4;
+        box-shadow: 0 0 0 2px rgba(0,120,212,0.2);
+    }
+
+/* Table */
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+}
+
+    .styled-table th,
+    .styled-table td {
+        padding: 0.75rem 1rem;
+        text-align: left;
+    }
+
+    .styled-table thead {
+        background: #f4f6fa;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .styled-table tbody tr:nth-child(even) {
+        background: #fafafa;
+    }
+
+.expanded-row td {
+    background: #f9f9fb;
+    border-top: 1px solid #e0e0e0;
+}
+/* Badges */
+.badge {
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    display: inline-block;
+    text-align: center;
+    min-width: 60px;
+}
+
+.badge-high {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.badge-medium {
+    background: #fef9c3;
+    color: #b45309;
+}
+
+.badge-low {
+    background: #dcfce7;
+    color: #166534;
+}
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.filter-input {
+    flex: 1 1 200px; /* grow and shrink, min 200px */
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+    .filter-input:focus {
+        border-color: #0078d4;
+        box-shadow: 0 0 0 2px rgba(0, 120, 212, 0.2);
+    }
+.flex-horizontal-cards {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap; /* wrap only on narrow screens */
+    gap: 1.5rem; /* space between cards */
+}
+.card-horizontal {
+    flex: 1; /* stretch equally */
+    min-width: 220px; /* don’t shrink too small */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.flex-horizontal-chart-cards {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap; /* wrap on narrow screens */
+    gap: 1.5rem; /* space between cards */
+    justify-content: left; /* optional, center cards horizontally */
+}
+
+.card-chart-horizontal {
+    flex: none; /* keep fixed size */
+    width: 500px; /* set card width */
+    height: 500px; /* set card height */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
