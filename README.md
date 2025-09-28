@@ -168,3 +168,11 @@ Feel free to open a PR or create an issue.
 ## 📜 License
 
 This project is licensed under the Apache 2.0 License – see the LICENSE file for details
+
+## Samples
+
+
+![ResourceCosts](https://github.com/user-attachments/assets/7557f013-ff6d-430f-a80e-16f6d5c381dc)
+![Recommendations](https://github.com/user-attachments/assets/511a2590-396b-4cfe-8fab-970cec6ee076)
+![ProviderChart](https://github.com/user-attachments/assets/700927f6-f1cd-4e83-9982-79dbb3115d5c)
+![Top services](https://github.com/user-attachments/assets/59878223-4a64-4678-8e0e-894f49a46808)
